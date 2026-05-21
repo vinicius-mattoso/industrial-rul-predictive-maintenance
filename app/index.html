@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Torre de Controle | Health Status Industrial</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegacao principal">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <strong>RUL Control</strong>
+            <small>Maintenance Tower</small>
+          </div>
+        </div>
+
+        <nav class="nav-list" aria-label="Areas da torre de controle">
+          <a class="nav-item active" href="#overview">
+            <span class="nav-icon nav-icon-dashboard" aria-hidden="true"></span>
+            Overview
+          </a>
+          <a class="nav-item" href="#fleet">
+            <span class="nav-icon nav-icon-fleet" aria-hidden="true"></span>
+            Equipamentos
+          </a>
+          <a class="nav-item" href="#alerts">
+            <span class="nav-icon nav-icon-alert" aria-hidden="true"></span>
+            Alertas
+          </a>
+          <a class="nav-item" href="#timeline">
+            <span class="nav-icon nav-icon-timeline" aria-hidden="true"></span>
+            Projecao
+          </a>
+        </nav>
+
+        <div class="sidebar-panel">
+          <span class="panel-kicker">Modelo</span>
+          <strong>Health Status Classifier</strong>
+          <p>Simulacao operacional baseada em ciclos, RUL, sensores criticos e regras de priorizacao.</p>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Operacao em tempo quase real</p>
+            <h1>Torre de controle de manutencao preditiva</h1>
+          </div>
+
+          <div class="topbar-actions">
+            <button class="icon-button" id="themeToggle" type="button" aria-label="Alternar tema claro e escuro" title="Alternar tema">
+              <span class="theme-glyph" aria-hidden="true"></span>
+            </button>
+            <button class="primary-button" id="simulateButton" type="button">
+              <span class="play-icon" aria-hidden="true"></span>
+              Rodar proximos 5 ciclos
+            </button>
+          </div>
+        </header>
+
+        <section class="control-strip" id="overview" aria-label="Controles da simulacao">
+          <div class="control-group">
+            <label for="cycleStep">Avanco</label>
+            <select id="cycleStep">
+              <option value="1">1 ciclo</option>
+              <option value="5" selected>5 ciclos</option>
+              <option value="10">10 ciclos</option>
+              <option value="25">25 ciclos</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="riskFilter">Filtro de risco</label>
+            <select id="riskFilter">
+              <option value="all">Todos</option>
+              <option value="warning">Warning</option>
+              <option value="critical">Critical</option>
+              <option value="healthy">Healthy</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="engineFilter">Engine</label>
+            <select id="engineFilter">
+              <option value="">Carregando...</option>
+            </select>
+          </div>
+          <button class="secondary-button" id="singleCycleButton" type="button">Avancar 1 ciclo</button>
+          <button class="secondary-button" id="autoRunButton" type="button" aria-pressed="false">Auto-run</button>
+          <span class="operation-clock" id="operationClock">Ciclo operacional 128</span>
+        </section>
+
+        <section class="metrics-grid" aria-label="Indicadores principais">
+          <article class="metric-card">
+            <span class="metric-label">Equipamentos monitorados</span>
+            <strong id="fleetCount">0</strong>
+            <small>Ativos na linha FD001</small>
+          </article>
+          <article class="metric-card warning">
+            <span class="metric-label">Warnings abertos</span>
+            <strong id="warningCount">0</strong>
+            <small>Requer acompanhamento</small>
+          </article>
+          <article class="metric-card critical">
+            <span class="metric-label">Criticos</span>
+            <strong id="criticalCount">0</strong>
+            <small>Prioridade de manutencao</small>
+          </article>
+          <article class="metric-card">
+            <span class="metric-label">RUL medio</span>
+            <strong id="avgRul">0</strong>
+            <small>Ciclos restantes estimados</small>
+          </article>
+        </section>
+
+        <section class="workspace-grid">
+          <section class="panel fleet-panel" id="fleet" aria-labelledby="fleetTitle">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Saude da frota</p>
+                <h2 id="fleetTitle">Mapa de equipamentos</h2>
+              </div>
+              <span class="status-pill" id="modelStatus">Modelo</span>
+            </div>
+            <div class="equipment-grid" id="equipmentGrid"></div>
+          </section>
+
+          <section class="panel chart-panel" id="timeline" aria-labelledby="timelineTitle">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Tendencia</p>
+                <h2 id="timelineTitle">RUL projetado por ciclo</h2>
+              </div>
+              <span class="status-pill neutral">Ultimos 12 ciclos</span>
+            </div>
+            <canvas id="rulChart" width="840" height="360" aria-label="Grafico de RUL projetado"></canvas>
+          </section>
+        </section>
+
+        <section class="panel sensor-panel" aria-labelledby="sensorTitle">
+          <div class="panel-header">
+            <div>
+              <p class="eyebrow">Analise por engine</p>
+              <h2 id="sensorTitle">Plot de sensores operacionais</h2>
+            </div>
+            <div class="sensor-selector" id="sensorSelector" aria-label="Sensores para plot"></div>
+          </div>
+          <canvas id="sensorChart" width="1200" height="420" aria-label="Grafico de sensores por engine"></canvas>
+        </section>
+
+        <section class="workspace-grid bottom-grid">
+          <section class="panel alerts-panel" id="alerts" aria-labelledby="alertsTitle">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Centro de alertas</p>
+                <h2 id="alertsTitle">Mensagens de warning</h2>
+              </div>
+              <button class="text-button" id="ackWarningsButton" type="button">Reconhecer warnings</button>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+          </section>
+
+          <section class="panel table-panel" aria-labelledby="tableTitle">
+            <div class="panel-header">
+              <div>
+                <p class="eyebrow">Fila operacional</p>
+                <h2 id="tableTitle">Priorizacao de manutencao</h2>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Equipamento</th>
+                    <th>Status</th>
+                    <th>RUL</th>
+                    <th>Sensor critico</th>
+                    <th>Acao sugerida</th>
+                  </tr>
+                </thead>
+                <tbody id="priorityTable"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
